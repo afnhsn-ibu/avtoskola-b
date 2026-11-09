@@ -75,7 +75,21 @@ a{color:var(--lane)}
  padding-top:calc(10px + env(safe-area-inset-top,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
  background:var(--paper);z-index:60}
-.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.tabwrap{position:relative}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
+ scroll-behavior:smooth;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{scroll-snap-align:start}
+.tabnav{position:absolute;top:0;bottom:2px;z-index:2;width:44px;border:0;padding:0;cursor:pointer;
+ font:600 24px/1 system-ui,sans-serif;color:var(--ink);display:flex;align-items:center;
+ opacity:0;pointer-events:none;transition:opacity .15s}
+.tabnav.prev{left:0;justify-content:flex-start;padding-left:2px;
+ background:linear-gradient(to right,var(--paper) 55%,transparent)}
+.tabnav.next{right:0;justify-content:flex-end;padding-right:2px;
+ background:linear-gradient(to left,var(--paper) 55%,transparent)}
+.tabwrap.can-prev .tabnav.prev,.tabwrap.can-next .tabnav.next{opacity:1;pointer-events:auto}
+.tabnav:hover{color:var(--lane)}
+.tabwrap.can-next .tabs::after{content:"";flex:0 0 36px}
 .tabs button{flex:0 0 auto;appearance:none;border:1px solid transparent;border-bottom:none;
  background:transparent;color:var(--soft);font:inherit;font-size:14px;cursor:pointer;
  padding:7px 13px;border-radius:3px 3px 0 0;white-space:nowrap}
@@ -212,7 +226,11 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--rule);font-si
 </div>
 
 <div class="bar">
-  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="tabwrap" id="tabwrap">
+    <button class="tabnav prev" id="tprev" aria-label="Önceki konular" tabindex="-1">‹</button>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <button class="tabnav next" id="tnext" aria-label="Sonraki konular" tabindex="-1">›</button>
+  </div>
   <div class="tools">
     <select id="test" aria-label="Test sırası" style="font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)">
       <option value="">Test seç</option>
@@ -2062,7 +2080,22 @@ el('#tabs').innerHTML=GROUPS.map(g=>
 render();
 
 el('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  active=b.dataset.k;cluster=null;qf='';testSel='';el('#q').value='';el('#test').value='';render();window.scrollTo({top:0})});
+  active=b.dataset.k;cluster=null;qf='';testSel='';el('#q').value='';el('#test').value='';render();window.scrollTo({top:0});
+  centerTab(b)});
+// ---- tab strip: arrows + edge fades show there is more to scroll ----
+const tabsEl=el('#tabs'), tabWrap=el('#tabwrap');
+const updTabNav=()=>{const m=tabsEl.scrollWidth-tabsEl.clientWidth;
+  tabWrap.classList.toggle('can-prev',tabsEl.scrollLeft>4);
+  tabWrap.classList.toggle('can-next',tabsEl.scrollLeft<m-4)};
+const centerTab=b=>{if(!b)return;const l=b.offsetLeft-(tabsEl.clientWidth-b.offsetWidth)/2;
+  tabsEl.scrollTo({left:Math.max(0,l)})};
+el('#tprev').addEventListener('click',()=>tabsEl.scrollBy({left:-tabsEl.clientWidth*.7}));
+el('#tnext').addEventListener('click',()=>tabsEl.scrollBy({left:tabsEl.clientWidth*.7}));
+tabsEl.addEventListener('scroll',updTabNav,{passive:true});
+window.addEventListener('resize',updTabNav);
+tabsEl.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&tabsEl.scrollWidth>tabsEl.clientWidth){
+  tabsEl.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+updTabNav();
 el('#test').innerHTML='<option value="">Test seç</option>'+
   Object.keys(TESTMAP).sort((a,b)=>a-b).map(t=>`<option value="${t}">тест ${t}</option>`).join('');
 el('#test').addEventListener('change',e=>{testSel=e.target.value;cluster=null;qf='';el('#q').value='';
