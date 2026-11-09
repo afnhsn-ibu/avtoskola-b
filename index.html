@@ -76,11 +76,11 @@ a{color:var(--lane)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
  background:var(--paper);z-index:60}
 .tabwrap{position:relative}
-.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
+.tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 2px 8px;
  scroll-behavior:smooth;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{scroll-snap-align:start}
-.tabnav{position:absolute;top:0;bottom:2px;z-index:2;width:44px;border:0;padding:0;cursor:pointer;
+.tabnav{position:absolute;top:0;bottom:6px;z-index:2;width:44px;border:0;padding:0;cursor:pointer;
  font:600 24px/1 system-ui,sans-serif;color:var(--ink);display:flex;align-items:center;
  opacity:0;pointer-events:none;transition:opacity .15s}
 .tabnav.prev{left:0;justify-content:flex-start;padding-left:2px;
@@ -90,13 +90,17 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tabwrap.can-prev .tabnav.prev,.tabwrap.can-next .tabnav.next{opacity:1;pointer-events:auto}
 .tabnav:hover{color:var(--lane)}
 .tabwrap.can-next .tabs::after{content:"";flex:0 0 36px}
-.tabs button{flex:0 0 auto;appearance:none;border:1px solid transparent;border-bottom:none;
- background:transparent;color:var(--soft);font:inherit;font-size:14px;cursor:pointer;
- padding:7px 13px;border-radius:3px 3px 0 0;white-space:nowrap}
-.tabs button:hover{color:var(--ink);background:var(--rule2)}
-.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);font-weight:600;
- border-color:var(--rule);box-shadow:0 1px 0 0 var(--card)}
-.tabs button .cnt{color:var(--soft);font-weight:400;font-variant-numeric:tabular-nums;margin-left:5px;font-size:12px}
+.tabs button{flex:0 0 auto;appearance:none;border:1px solid var(--rule);
+ background:var(--card);color:var(--ink);font:inherit;font-size:15px;font-weight:500;cursor:pointer;
+ padding:9px 16px;border-radius:999px;white-space:nowrap;line-height:1.2;
+ transition:background .15s,color .15s,border-color .15s}
+@media (hover:hover){.tabs button:not([aria-selected="true"]):hover{border-color:var(--lane);color:var(--lane);background:var(--lane-bg)}}
+.tabs button[aria-selected="true"]{background:var(--lane);border-color:var(--lane);color:var(--card);font-weight:600;
+ box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.tabs button .cnt{display:inline-block;font-weight:600;font-variant-numeric:tabular-nums;margin-left:7px;font-size:12px;
+ padding:1px 7px;border-radius:999px;background:var(--rule2);color:var(--soft)}
+.tabs button[aria-selected="true"] .cnt{background:rgba(255,255,255,.22);color:var(--card)}
+.tabs button:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
 .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 0}
 .tools input[type=search]{flex:1 1 210px;min-width:0;font:inherit;font-size:14px;padding:6px 10px;
  border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
@@ -110,7 +114,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .bar{transition:transform .22s ease}
 @media (max-width:720px){
  .bar{padding-top:calc(6px + env(safe-area-inset-top,0px))}
- .tabs button{padding:6px 10px;font-size:13px}
+ .tabs button{padding:8px 14px;font-size:14px}
  .tools{flex-wrap:nowrap;gap:8px;padding:7px 0}
  .tools #mode,.tools #test,.tools .prog,.tools #more{order:0}
  .tools #test{flex:1 1 auto;min-width:0;width:0}
