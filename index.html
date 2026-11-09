@@ -89,6 +89,33 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tools label{display:inline-flex;gap:6px;align-items:center;font-size:14px;color:var(--soft);cursor:pointer;user-select:none}
 .tools label:hover{color:var(--ink)}
 .prog{flex:0 0 auto;font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums}
+/* desktop: extra controls flow inline, keep original order */
+.extra{display:contents}
+#more{display:none}
+.tools #q{order:-3}.tools #test{order:-2}.tools #mode{order:-1}.tools label{order:0}.tools .prog{order:1}.tools #reset{order:2}
+.bar{transition:transform .22s ease}
+@media (max-width:720px){
+ .bar{padding-top:calc(6px + env(safe-area-inset-top,0px))}
+ .tabs button{padding:6px 10px;font-size:13px}
+ .tools{flex-wrap:nowrap;gap:8px;padding:7px 0}
+ .tools #mode,.tools #test,.tools .prog,.tools #more{order:0}
+ .tools #test{flex:1 1 auto;min-width:0;width:0}
+ .tools .prog .progbar{display:none}
+ #more{display:inline-block;flex:0 0 auto;white-space:nowrap}
+ .extra{display:none}
+ body.showextra .extra{display:flex;flex-direction:column;align-items:stretch;gap:12px;
+   position:absolute;left:0;right:0;top:100%;background:var(--card);border-bottom:1px solid var(--rule);
+   padding:14px 20px 16px;box-shadow:0 8px 18px rgba(0,0,0,.12)}
+ body.showextra .extra input[type=search]{flex:0 0 auto;font-size:16px;padding:9px 10px}
+ body.showextra .extra label{font-size:15px;color:var(--ink);padding:2px 0}
+ body.showextra .extra label input{width:20px;height:20px}
+ body.showextra .extra #reset{align-self:flex-start}
+ .bar.hid{transform:translateY(-100%)}
+ .tools #test{min-width:96px}
+ .seg button{padding-left:10px;padding-right:10px}
+ html{scroll-padding-top:100px}
+}
+@media (max-width:380px){.tools .prog{display:none}}
 .progbar{display:block;width:120px;height:5px;background:var(--rule2);border-radius:3px;overflow:hidden;margin-top:3px}
 .progbar i{display:block;height:100%;background:var(--ok);width:0%}
 button.ghost{appearance:none;font:inherit;font-size:13px;border:1px solid var(--rule);background:var(--card);
@@ -187,20 +214,23 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--rule);font-si
 <div class="bar">
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="tools">
-    <input type="search" id="q" placeholder="Makedonca metinde veya görsel numarasında ara…" aria-label="Ara">
     <select id="test" aria-label="Test sırası" style="font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)">
-      <option value="">konuya göre</option>
+      <option value="">Test seç</option>
     </select>
     <span class="seg" id="mode">
       <button data-m="atlas" aria-pressed="true">Atlas</button>
       <button data-m="quiz" aria-pressed="false">Sınav</button>
     </span>
+    <span class="prog"><span id="ptxt">0 / 0</span><span class="progbar"><i id="pbar"></i></span></span>
+    <button class="ghost" id="more" aria-expanded="false" aria-controls="extra">Filtre ▾</button>
+    <div class="extra" id="extra">
+    <input type="search" id="q" placeholder="Makedonca metinde veya görsel numarasında ara…" aria-label="Ara">
     <label><input type="checkbox" id="showans" checked> Cevabı göster</label>
     <label><input type="checkbox" id="tr" checked> Türkçe açıklama</label>
     <label><input type="checkbox" id="hide"> Şıkları gizle</label>
     <label><input type="checkbox" id="only"> Sadece öğrenilmemişler</label>
-    <span class="prog"><span id="ptxt">0 / 0</span><span class="progbar"><i id="pbar"></i></span></span>
     <button class="ghost" id="reset">İlerlemeyi sıfırla</button>
+    </div>
   </div>
 </div>
 
@@ -2033,7 +2063,7 @@ render();
 
 el('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   active=b.dataset.k;cluster=null;qf='';testSel='';el('#q').value='';el('#test').value='';render();window.scrollTo({top:0})});
-el('#test').innerHTML='<option value="">konuya göre</option>'+
+el('#test').innerHTML='<option value="">Test seç</option>'+
   Object.keys(TESTMAP).sort((a,b)=>a-b).map(t=>`<option value="${t}">тест ${t}</option>`).join('');
 el('#test').addEventListener('change',e=>{testSel=e.target.value;cluster=null;qf='';el('#q').value='';
   render();window.scrollTo({top:0})});
@@ -2050,6 +2080,17 @@ el('#mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   if(mode==='quiz') el('#showans').checked=false;
   if(mode!=='quiz') el('#showans').checked=true;
   render()});
+// ---- mobile: filters drawer + hide bar while scrolling down ----
+const moreBtn=el('#more'), barEl=document.querySelector('.bar');
+const setExtra=o=>{document.body.classList.toggle('showextra',o);moreBtn.setAttribute('aria-expanded',String(o));
+  moreBtn.textContent=o?'Kapat ▴':'Filtre ▾';if(o)barEl.classList.remove('hid')};
+moreBtn.addEventListener('click',()=>setExtra(!document.body.classList.contains('showextra')));
+document.addEventListener('click',e=>{if(document.body.classList.contains('showextra')&&!e.target.closest('.bar'))setExtra(false)});
+let lastY=window.scrollY;
+window.addEventListener('scroll',()=>{const y=window.scrollY;
+  if(document.body.classList.contains('showextra')){lastY=y;return}
+  if(y>lastY+8&&y>160)barEl.classList.add('hid'); else if(y<lastY-8||y<160)barEl.classList.remove('hid');
+  lastY=y},{passive:true});
 el('#reset').addEventListener('click',()=>{
   if(confirm('“öğrendim” işaretleri silinsin mi?')){DONE.clear();save();render()}});
 
