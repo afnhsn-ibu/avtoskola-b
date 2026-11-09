@@ -1,10 +1,20 @@
-# Avtoškola — Kat. B çalışma aracı
+# Makedonya Ehliyet Sınavı Soruları — Türkçe Açıklamalı (B Kategorisi)
+
+**▶ Online çalış: https://afnhsn-ibu.github.io/avtoskola-b/**
+
+Kuzey Makedonya sürücü belgesi (ehliyet) teorik sınavına **Türkçe** hazırlanmak
+isteyenler için ücretsiz deneme sınavı: 40 test, 621 soru, doğru cevaplar ve her
+soru için Türkçe açıklama. Üyelik yok, telefonda da çalışır.
+
+*Авто-тест Б категорија · возачки испит · Avtoškola B test Türkçe*
+
+---
 
 Kuzey Makedonya B kategorisi sürücü belgesi teorik sınavının **40 testinin tamamı**
 — 621 soru, hepsi cevaplı — tek bir HTML sayfasında. Kurulum yok, hesap yok,
 internet gerekmez.
 
-**Demo:** `index.html` dosyasını tarayıcıda açmanız yeterli.
+**Demo:** https://afnhsn-ibu.github.io/avtoskola-b/ — veya `index.html` dosyasını tarayıcıda açın.
 
 ## İçerik
 

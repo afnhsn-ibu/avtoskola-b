@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://afnhsn-ibu.github.io/avtoskola-b/sitemap.xml
