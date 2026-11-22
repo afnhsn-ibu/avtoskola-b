@@ -197,6 +197,25 @@ body.pickmode ol.opts li:hover,body.quizmode ol.opts li:hover{background:var(--r
 body.pickmode .imgs .cell{cursor:cell}
 .ansline{font-size:13px;color:var(--ok);padding:6px 0 0;border-top:1px solid var(--rule2)}
 .cell.ok{outline:3px solid var(--ok);outline-offset:-3px}
+.qrow{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.qin{font:inherit;font-size:16px;padding:6px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);min-width:0}
+.qrow .qin{flex:1 1 140px;max-width:220px;letter-spacing:.08em}
+.qin.ok{border-color:var(--ok);background:var(--ok-bg)}
+.qin.bad{border-color:var(--warn);background:var(--warn-bg)}
+.lfields{display:flex;gap:8px;padding:8px;background:var(--rule2)}
+.lfields .qin{flex:1 1 0;width:0;text-align:center;font-weight:600;font-size:18px;background:var(--card);border:2px solid var(--lane)}
+.lfields .qin.ok{border-color:var(--ok);background:var(--ok-bg)}.lfields .qin.bad{border-color:var(--warn);background:var(--warn-bg)}
+button.qchk{appearance:none;font:inherit;font-size:14px;font-weight:600;padding:6px 14px;border:1px solid var(--lane);border-radius:3px;background:var(--lane);color:#fff;cursor:pointer}
+button.qchk:hover{filter:brightness(1.1)}
+.qres{font-size:14px;font-weight:600;margin-top:8px;padding:6px 10px;border-radius:2px}
+.qres.ok{color:var(--ok);background:var(--ok-bg)}
+.qres.bad{color:var(--warn);background:var(--warn-bg)}
+.qres:empty{display:none}
+body.quizmode .imgs.pick .cell{cursor:pointer}
+body.quizmode .imgs.pick img{cursor:pointer}
+body.quizmode .imgs.pick .cell:hover{outline:3px solid var(--lane);outline-offset:-3px}
+body.quizmode .imgs.pick .cell.ok{outline:3px solid var(--ok)}body.quizmode .imgs.pick .cell.bad{outline:3px solid var(--warn)}
+.cell.bad{outline:3px solid var(--warn);outline-offset:-3px}
 .keyin{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:3px;
  background:var(--paper);color:var(--ink);width:100%;margin-top:8px}
 .seg{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden;flex:0 0 auto}
@@ -2304,8 +2323,12 @@ function card(d){
   if(d.n) list=`<ol class="names">${d.n.map((x,i)=>`<li>${esc(x)}${(OTR[d.id]&&OTR[d.id][i])?`<span class="otr">${esc(OTR[d.id][i])}</span>`:''}</li>`).join('')}</ol>`;
   else if(d.o) list=`<ol class="opts">${d.o.map((x,i)=>
       `<li data-i="${i}" class="${show&&i===ci?'ok':''}">${esc(x)}${(OTR[d.id]&&OTR[d.id][i])?`<span class="otr">${esc(OTR[d.id][i])}</span>`:''}</li>`).join('')}</ol>`;
-  if(d.typed) list+=`<div class="typed">Cevap yazılarak giriliyor — şık yok.</div>`;
-  if(!d.o&&!d.n&&!d.typed&&d.i&&d.i.length>1) list=`<div class="typed">Üç görselden doğru olanı seçiyorsunuz — yazılı şık yok.</div>`;
+  const quiz=mode==='quiz', pick=!d.o&&!d.n&&!d.typed&&d.i&&d.i.length>1;
+  if(d.typed) list+=quiz?`<div class="qrow"><input class="qin" data-qin="${esc(d.id)}" inputmode="numeric" autocomplete="off" placeholder="${d.g==='redosled'?'ör. 231':'cevap'}" aria-label="Cevabınız"><button type="button" class="qchk" data-qchk="${esc(d.id)}">Kontrol et</button></div>`
+     :`<div class="typed">Cevap yazılarak giriliyor — şık yok.</div>`;
+  if(d.n&&quiz) list+=`<div class="qrow"><span class="typed" style="border:0;padding:0">Her levhanın altındaki kutuya doğru ismin numarasını yazın.</span><button type="button" class="qchk" data-qchk="${esc(d.id)}">Kontrol et</button></div>`;
+  if(pick) list=`<div class="typed">${quiz?'Doğru görsele tıklayın.':'Üç görselden doğru olanı seçiyorsunuz — yazılı şık yok.'}</div>`;
+  if(quiz&&(d.typed||d.n||pick)) list+=`<div class="qres"></div>`;
   // answer line for keys that are free text (typed / levha / unmatched)
   if(show&&v&&!isImgAns(v)&&ci<0) list+=`<div class="ansline">Doğru cevap: ${esc(v)}</div>`;
   if(mode==='key'&&(d.typed||d.n)) list+=`<input class="keyin" data-typed="${esc(d.id)}" value="${esc(v&&!isImgAns(v)?v:'')}" placeholder="doğru cevabı yaz (ör. 231 veya 3 1 5 2)">`;
@@ -2313,7 +2336,8 @@ function card(d){
   const sib=d.sib>1?` <a href="#" class="sib" data-cl="${esc(d.q)}">${d.sib} varyant</a>`:'';
   const kb='';
   return `<article class="card${DONE.has(d.id)?' done':''}" data-id="${esc(d.id)}">
-   ${d.i&&d.i.length?`<div class="imgs${d.i.length===1?' one':''}">${imgs}</div>`:''}
+   ${d.i&&d.i.length?`<div class="imgs${d.i.length===1?' one':''}${pick?' pick':''}">${imgs}</div>`:''}
+   ${quiz&&d.n?`<div class="lfields">${d.i.map((f,i)=>`<input class="qin" data-lf="${i}" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="?" aria-label="${i+1}. levha için numara">`).join('')}</div>`:''}
    <div class="body"><p class="q">${esc(d.q)}</p>${TR[d.id]?`<div class="trnote">${esc(TR[d.id])}</div>`:''}${list}
    <div class="reveal">Şıklar gizli — üstteki kutuyu kapatınca görünür.</div></div>
    <div class="meta">${slotOf(d)}<span class="id">${esc(d.id)}</span><span>test ${d.t.join(', ')}</span>${sib}${' '}${kb}
@@ -2420,11 +2444,35 @@ el('#panel').addEventListener('click',e=>{
     if(+li.dataset.i!==ci) li.parentElement.children[ci].classList.add('ok');
     const w=art.querySelector('.why');if(w)w.classList.add('on');
     return}
+  if(e.target.closest('[data-qchk]')&&d){qcheck(art,d);return}
+  const pc=e.target.closest('.imgs.pick .cell');
+  if(pc&&d&&mode==='quiz'){const v=KEY[d.id],res=art.querySelector('.qres');
+    if(!v){res.className='qres bad';res.textContent='Bu soru için cevap bulunamadı.';return}
+    art.querySelectorAll('.cell').forEach(c=>{c.classList.remove('ok','bad');if(c.dataset.img===v)c.classList.add('ok')});
+    const ok=pc.dataset.img===v;if(!ok)pc.classList.add('bad');
+    res.className='qres '+(ok?'ok':'bad');res.textContent=ok?'✓ Doğru':'✗ Yanlış — doğru görsel yeşil çerçeveli.';return}
   const cell=e.target.closest('.cell');
   if(cell&&d&&mode==='key'&&d.i.length>1){KEY[d.id]=cell.dataset.img;save();render();return}
   const img=e.target.closest('img[data-f]');
   if(img){el('#lbimg').src=img.src;el('#lbcap').textContent=img.dataset.f;openD(el('#lb'))}
 });
+const qnorm=s=>String(s||'').replace(/[^0-9a-zа-шѓѕјљњќџ]/gi,'').toLowerCase();
+function qcheck(art,d){
+  const v=KEY[d.id],res=art.querySelector('.qres');if(!res)return;
+  if(!v){res.className='qres bad';res.textContent='Bu soru için cevap bulunamadı.';return}
+  if(d.n){const ans=v.trim().split(/\s+/),ins=[...art.querySelectorAll('[data-lf]')];let n=0;
+    ins.forEach((x,i)=>{const ok=qnorm(x.value)===ans[i];x.classList.toggle('ok',ok);x.classList.toggle('bad',!ok);if(ok)n++});
+    res.className='qres '+(n===ins.length?'ok':'bad');
+    res.textContent=n===ins.length?'✓ Doğru — 4 / 4':`✗ ${n} / ${ins.length} doğru — doğru sıra: ${ans.join(' · ')}`;return}
+  const x=art.querySelector('[data-qin]'),dig=/^[\d\s]+$/.test(v),f=s=>dig?String(s).replace(/\D/g,''):qnorm(s),ok=f(x.value)!==''&&f(x.value)===f(v);
+  if(!qnorm(x.value)){x.focus();return}
+  x.classList.toggle('ok',ok);x.classList.toggle('bad',!ok);
+  res.className='qres '+(ok?'ok':'bad');res.textContent=ok?'✓ Doğru':'✗ Yanlış — doğru cevap: '+v;
+}
+el('#panel').addEventListener('keydown',e=>{const x=e.target.closest('.qin');if(!x||e.key!=='Enter')return;
+  e.preventDefault();const art=x.closest('.card');qcheck(art,byId[art.dataset.id])});
+el('#panel').addEventListener('input',e=>{const x=e.target.closest('[data-lf]');if(!x)return;
+  x.classList.remove('ok','bad');if(x.value&&x.nextElementSibling)x.nextElementSibling.focus()});
 el('#panel').addEventListener('change',e=>{
   const c=e.target.closest('[data-chk]');
   if(c){const id=c.dataset.chk;c.checked?DONE.add(id):DONE.delete(id);save();
