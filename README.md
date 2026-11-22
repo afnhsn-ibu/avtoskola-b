@@ -27,7 +27,7 @@ internet gerekmez.
 
 Konu sekmeleri: levha adı, ek tabela, levha grubu, levha yorumu,
 polis/ışık/gösterge, kavşakta öncelik, geçiş sırası, güzergâh A→B,
-yolda durum, görselsiz sorular.
+yolda durum, görselsiz sorular. Ayrıca **Sözlük** sekmesi: sınavda en sık geçen 133 Makedonca kelime, Türkçe karşılığı ve okunuşuyla.
 
 ## Özellikler
 
